@@ -1,2 +1,16 @@
 .env
 __pycache__/
+*.pyc
+*.log
+test_*.py
+
+# Demo and temporary files
+demo_*.py
+*_demo.py
+
+# IDEs and editors
+.vscode/
+.idea/
+# OS specific
+Thumbs.db
+.DS_Store

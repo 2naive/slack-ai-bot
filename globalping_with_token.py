@@ -35,10 +35,15 @@ class GlobalpingTokenClient:
             if target.startswith(("http://", "https://")):
                 clean_target = target.replace("https://", "").replace("http://", "").split("/")[0]
             
+            # Правильно формируем локации - разбиваем строку на отдельные magic объекты
+            location_objects = []
+            for loc in locations.split(","):
+                location_objects.append({"magic": loc.strip()})
+            
             payload = {
                 "type": test_type,
                 "target": clean_target,
-                "locations": [{"magic": locations}],
+                "locations": location_objects,
                 "limit": limit
             }
             
@@ -122,7 +127,7 @@ class GlobalpingTokenClient:
                 else:
                     results.append(f"📍 {location}: MTR данные недоступны")
         
-        return f"🌍 **Globalping {test_type.upper()}** для `{target}`:\n" + "\n".join(results)
+        return f"🌍 *{test_type.upper()}* для `{target}`:\n" + "\n".join(results)
 
     def get_credits(self) -> Dict[str, Any]:
         try:

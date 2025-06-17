@@ -157,30 +157,38 @@ class GlobalpingHybridClient:
             # Создаем измерение
             create_url = f"{self.rest_api_base}/measurements"
             
-            # Правильный формат для разных типов тестов
-            payload = {
-                "type": test_type,
-                "target": target,
-                "locations": [{"magic": locations}]
-            }
+            # Правильно формируем локации - разбиваем строку на отдельные magic объекты
+            location_objects = []
+            for loc in locations.split(","):
+                location_objects.append({"magic": loc.strip()})
             
             # Добавляем опции только если нужно
+            measurement_options = {}
             if test_type == "ping":
-                payload["measurementOptions"] = {"packets": 3}
+                measurement_options["packets"] = 3
             elif test_type == "traceroute":
-                payload["measurementOptions"] = {"protocol": "ICMP"}
+                measurement_options["protocol"] = "ICMP"
             
             # Специальная обработка для HTTP
+            clean_target = target
             if test_type == "http":
                 # Для HTTP тестов Globalping принимает ТОЛЬКО доменные имена без протокола
                 if target.startswith(("http://", "https://")):
                     # Убираем протокол и путь, оставляем только домен
                     clean_target = target.replace("https://", "").replace("http://", "").split("/")[0]
-                    payload["target"] = clean_target
-                else:
-                    payload["target"] = target
             
             headers = {"Content-Type": "application/json"}
+            payload = {
+                "type": test_type,
+                "target": clean_target,
+                "locations": location_objects,
+                "limit": 2  # Добавляем фиксированный limit
+            }
+            
+            # Добавляем measurementOptions только если есть опции
+            if measurement_options:
+                payload["measurementOptions"] = measurement_options
+            
             response = self.session.post(create_url, json=payload, headers=headers, timeout=10)
             
             if response.status_code != 202:
