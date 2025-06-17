@@ -354,6 +354,7 @@ def format_summary(summary):
     formatted = formatted.replace("### Итоговое резюме", "")
     formatted = formatted.replace("### ", "🔸 **")
     formatted = formatted.replace("**:", ":*")
+    formatted = formatted.replace(":**", ":*")
     
     # Улучшаем списки
     formatted = formatted.replace("1. **", "1️⃣ *")
