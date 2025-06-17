@@ -25,6 +25,9 @@ class GlobalpingTokenClient:
     def traceroute(self, target: str, locations: str = "EU", limit: int = 2) -> Dict[str, Any]:
         return self._execute_test(target, "traceroute", locations, limit)
     
+    def mtr(self, target: str, locations: str = "EU", limit: int = 2) -> Dict[str, Any]:
+        return self._execute_test(target, "mtr", locations, limit)
+    
     def _execute_test(self, target: str, test_type: str, locations: str, limit: int = 2) -> Dict[str, Any]:
         try:
             # Очищаем URL от протокола для всех типов тестов
@@ -105,6 +108,19 @@ class GlobalpingTokenClient:
                 last_hop = hops[-1] if hops else {}
                 last_time = last_hop.get("timings", [{}])[-1].get("rtt", "N/A") if last_hop else "N/A"
                 results.append(f"📍 {location}: {hop_count} прыжков, последний {last_time}ms")
+            elif test_type == "mtr":
+                mtr_result = result.get("result", {})
+                hops = mtr_result.get("hops", [])
+                if hops:
+                    # Берем последний хоп для краткости
+                    last_hop = hops[-1]
+                    hop_num = last_hop.get("hop", len(hops))
+                    stats = last_hop.get("stats", {})
+                    avg_time = stats.get("avg", "N/A")
+                    packet_loss = stats.get("loss", "N/A")
+                    results.append(f"📍 {location}: {hop_num} прыжков, среднее {avg_time}ms (потери: {packet_loss}%)")
+                else:
+                    results.append(f"📍 {location}: MTR данные недоступны")
         
         return f"🌍 **Globalping {test_type.upper()}** для `{target}`:\n" + "\n".join(results)
 
@@ -149,6 +165,14 @@ def token_traceroute(api_token: str, target: str, locations: str = "EU") -> str:
         return f"✅ {result['result']}"
     else:
         return f"❌ **Ошибка traceroute**: {result['error']}"
+
+def token_mtr(api_token: str, target: str, locations: str = "EU") -> str:
+    client = GlobalpingTokenClient(api_token)
+    result = client.mtr(target, locations)
+    if result["success"]:
+        return f"✅ {result['result']}"
+    else:
+        return f"❌ **Ошибка mtr**: {result['error']}"
 
 def comprehensive_token_test(api_token: str, target: str, locations: str = "EU,NA") -> str:
     client = GlobalpingTokenClient(api_token)
