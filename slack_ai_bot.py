@@ -385,7 +385,7 @@ def get_os_commands(target):
             f"dig {domain} SOA +short",
             f"dig {domain} +short",
             f"curl -I -v -m 10 {target}",
-            f"mtr -4 -w -c 10 -b -y 2 -z -m 20 {target}"
+            f"mtr -4 -w -c 10 -b -y 2 -z -m 20 {domain}"
         ]
 
 def extract_domain(target):
