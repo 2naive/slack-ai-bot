@@ -22,13 +22,15 @@ RestartSec=5
 Restart=always
 RestartPreventExitStatus=2
 
-# Безопасность
-NoNewPrivileges=true
+# Безопасность (разрешаем сетевые capabilities для ping/mtr)
+NoNewPrivileges=false
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
 ReadWritePaths=/opt/slack-ai-bot/logs
-CapabilityBoundingSet=CAP_NET_RAW
+# Необходимые права для ping -i/-s и mtr
+CapabilityBoundingSet=CAP_NET_RAW CAP_NET_ADMIN CAP_SETUID CAP_SETGID
+AmbientCapabilities=CAP_NET_RAW CAP_NET_ADMIN
 
 # Лимиты ресурсов
 LimitNOFILE=1024

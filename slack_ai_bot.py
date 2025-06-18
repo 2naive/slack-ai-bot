@@ -381,7 +381,7 @@ def get_os_commands(target):
         ]
     else:
         return [
-            f"ping -n 10 -i 0.2 -s 1000 {domain}",
+            f"ping -4 -c 10 -s 1000 -i 0.2 {domain}",
             f"dig {domain} SOA +short",
             f"dig {domain} +short",
             f"curl -I -v -m 10 {target}",
