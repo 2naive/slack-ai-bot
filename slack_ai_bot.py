@@ -415,6 +415,9 @@ def format_summary(summary):
 
 @app.event("message")
 def handle_message(event, say):
+    # Пропускаем дочерние сообщения в тредах
+    if event.get('thread_ts') and event.get('thread_ts') != event.get('ts'):
+        return
     # print(f"🔍 DEBUG EVENT: {json.dumps(event, indent=2, ensure_ascii=False)}")
     """Обработка входящих Slack-сообщений с восстановлением после ошибок"""
     try:
