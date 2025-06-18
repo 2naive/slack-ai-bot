@@ -109,21 +109,47 @@ class GlobalpingTokenClient:
             elif test_type == "traceroute":
                 trace_result = result.get("result", {})
                 hops = trace_result.get("hops", [])
-                hop_count = len(hops)
-                last_hop = hops[-1] if hops else {}
-                last_time = last_hop.get("timings", [{}])[-1].get("rtt", "N/A") if last_hop else "N/A"
-                results.append(f"📍 {location}: {hop_count} прыжков, последний {last_time}ms")
+                if hops:
+                    hop_details = []
+                    for hop_index, hop in enumerate(hops, 1):
+                        hop_num = hop_index  # Используем индекс как номер хопа
+                        timings = hop.get("timings", [])
+                        
+                        if timings:
+                            # Берем первый успешный timing
+                            timing = timings[0]
+                            rtt = timing.get("rtt", "N/A")
+                            
+                            # Получаем IP или hostname из правильных полей
+                            ip_or_host = hop.get("resolvedHostname") or hop.get("resolvedAddress") or "* * *"
+                            
+                            hop_details.append(f"  {hop_num:2}. {ip_or_host} - {rtt}ms")
+                        else:
+                            hop_details.append(f"  {hop_num:2}. * * * (timeout)")
+                    
+                    results.append(f"📍 {location} TRACEROUTE:\n" + "\n".join(hop_details))
+                else:
+                    results.append(f"📍 {location}: Traceroute данные недоступны")
             elif test_type == "mtr":
                 mtr_result = result.get("result", {})
                 hops = mtr_result.get("hops", [])
+                    
                 if hops:
-                    # Берем последний хоп для краткости
-                    last_hop = hops[-1]
-                    hop_num = last_hop.get("hop", len(hops))
-                    stats = last_hop.get("stats", {})
-                    avg_time = stats.get("avg", "N/A")
-                    packet_loss = stats.get("loss", "N/A")
-                    results.append(f"📍 {location}: {hop_num} прыжков, среднее {avg_time}ms (потери: {packet_loss}%)")
+                    hop_details = []
+                    for hop_index, hop in enumerate(hops, 1):
+                        hop_num = hop_index  # Используем индекс как номер хопа
+                        stats = hop.get("stats", {})
+                        avg_time = stats.get("avg", "N/A")
+                        packet_loss = stats.get("loss", 0)
+                        
+                        # Получаем IP или hostname из правильных полей
+                        ip_or_host = hop.get("resolvedHostname") or hop.get("resolvedAddress") or "* * *"
+                        
+                        # Форматируем строку хопа
+                        loss_str = f" ({packet_loss}% loss)" if packet_loss > 0 else ""
+                        hop_details.append(f"  {hop_num:2}. {ip_or_host} - {avg_time}ms{loss_str}")
+                    
+                    results.append(f"📍 {location} MTR:\n" + "\n".join(hop_details))
                 else:
                     results.append(f"📍 {location}: MTR данные недоступны")
         
