@@ -1,0 +1,45 @@
+[Unit]
+Description=Slack AI Bot для диагностики сайтов
+Documentation=https://github.com/your-repo/slack-ai-bot
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=slackbot
+Group=slackbot
+WorkingDirectory=/opt/slack-ai-bot
+Environment=PATH=/opt/slack-ai-bot/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+EnvironmentFile=/opt/slack-ai-bot/.env
+ExecStart=/opt/slack-ai-bot/venv/bin/python slack_ai_bot.py
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutSec=30
+RestartSec=5
+Restart=always
+RestartPreventExitStatus=2
+
+# Безопасность
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/slack-ai-bot/logs
+CapabilityBoundingSet=CAP_NET_RAW
+
+# Лимиты ресурсов
+LimitNOFILE=1024
+LimitNPROC=512
+MemoryHigh=256M
+MemoryMax=512M
+
+# Журналирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=slack-ai-bot
+
+[Install]
+WantedBy=multi-user.target 
