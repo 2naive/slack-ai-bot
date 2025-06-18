@@ -11,6 +11,7 @@ Type=simple
 User=slackbot
 Group=slackbot
 WorkingDirectory=/opt/slack-ai-bot
+Environment=PYTHONUNBUFFERED=1
 Environment=PATH=/opt/slack-ai-bot/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 EnvironmentFile=/opt/slack-ai-bot/.env
 ExecStart=/opt/slack-ai-bot/venv/bin/python slack_ai_bot.py
