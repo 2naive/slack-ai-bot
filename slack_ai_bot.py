@@ -316,6 +316,58 @@ def format_public_results(result_data: dict, test_type: str, target: str) -> str
     
     return f"🌍 **{test_type.upper()}** для `{target}`:\n" + "\n".join(results)
 
+def get_website_screenshot(target: str) -> str:
+    """Создает миниатюрный скриншот веб-страницы без кеширования для актуальной диагностики"""
+    try:
+        import random
+        import time
+        
+        # Очищаем URL
+        url = target
+        if not url.startswith(('http://', 'https://')):
+            url = f"https://{url}"
+        
+        # Генерируем уникальные параметры против кеширования
+        timestamp = int(time.time())
+        random_id = random.randint(10000, 99999)
+        cache_bust = f"{timestamp}{random_id}"
+        
+        # Используем бесплатные API с anti-cache параметрами
+        screenshot_services = [
+            # thum.io с force refresh
+            f"https://image.thum.io/get/width/480/crop/360/noanimate/{url}?cache={cache_bust}",
+            # s-shot.ru с timestamp
+            f"https://mini.s-shot.ru/480x360/JPEG/480/Z100/?{url}&_={cache_bust}",
+            # screenshotapi.net с fresh параметром
+            f"https://shot.screenshotapi.net/screenshot?url={url}&output=image&file_type=png&wait_for_event=load&width=480&height=360&fresh=true&cache_bust={cache_bust}"
+        ]
+        
+        for service_url in screenshot_services:
+            try:
+                # Добавляем заголовки против кеширования
+                headers = {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0',
+                    'User-Agent': f'SlackBot-Screenshot-{cache_bust}'
+                }
+                
+                response = requests.get(
+                    service_url, 
+                    timeout=7,  # Увеличиваем таймаут для свежих скриншотов
+                    allow_redirects=True,
+                    headers=headers
+                )
+                
+                if response.status_code == 200 and len(response.content) > 1000:  # Минимальный размер изображения
+                    return service_url
+            except requests.RequestException:
+                continue
+        return ""
+        
+    except Exception as e:
+        return f"📷 Скриншот недоступен: {str(e)}"
+
 def get_os_commands(target):
     """Возвращает команды в зависимости от ОС"""
     domain = extract_domain(target)
@@ -457,6 +509,10 @@ def handle_message(event, say):
         token_status = "🔑" if GLOBALPING_API_TOKEN else "🌐"
         say(f"🔍 *Диагностика ресурса:* `{target}`", thread_ts=thread_ts)
         
+        # ЧАСТЬ 0: Скриншот страницы
+        screenshot_url = get_website_screenshot(target)
+        say(f"📸 <{screenshot_url}|Скриншот>", thread_ts=thread_ts)
+ 
         # ЧАСТЬ 1: Globalping тесты
         globalping_results = []
         globalping_tests = ["ping", "http", "dns", "traceroute", "mtr"]
