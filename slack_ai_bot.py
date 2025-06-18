@@ -381,9 +381,11 @@ def get_os_commands(target):
         ]
     else:
         return [
-            f"ping -c 10 -i 0.2 -s 1000 {domain}",
+            f"ping -n 10 -i 0.2 -s 1000 {domain}",
             f"dig {domain} SOA +short",
-            f"curl -I -v -m 10 {target}"
+            f"dig {domain} +short",
+            f"curl -I -v -m 10 {target}",
+            f"mtr -4 -w -c 10 -b -y 2 -z -m 20 {target}"
         ]
 
 def extract_domain(target):

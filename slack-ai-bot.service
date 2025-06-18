@@ -1,6 +1,6 @@
 [Unit]
 Description=Slack AI Bot для диагностики сайтов
-Documentation=https://github.com/your-repo/slack-ai-bot
+Documentation=https://github.com/2naive/slack-ai-bot
 After=network-online.target
 Wants=network-online.target
 StartLimitIntervalSec=60
